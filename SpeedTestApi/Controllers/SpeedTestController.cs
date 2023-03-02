@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
+using SpeedTestApi.Models;
 namespace SpeedTestApi.Controllers;
 
 [ApiController]
@@ -13,4 +13,12 @@ public class SpeedTestController : ControllerBase
     {
         return "PONG";
     }
+
+    // POST speedtest/
+    [HttpPost]
+    public string UploadSpeedTest([FromBody] TestResult speedTest)
+    {
+        return $"Got a TestResult from { speedTest.User } with download { speedTest.Data.Speeds.Download } Mbps.";
+    }
+
 }
