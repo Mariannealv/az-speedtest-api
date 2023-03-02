@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SpeedTestApi.Models;
 using Microsoft.Extensions.Logging;
+using SpeedTestApi.Services;
+
 namespace SpeedTestApi.Controllers;
 
 [ApiController]
@@ -8,10 +10,12 @@ namespace SpeedTestApi.Controllers;
 public class SpeedTestController : ControllerBase
 {
     private readonly ILogger _logger;
+    private readonly ISpeedTestEvents _speedTestEvents;
 
-    public SpeedTestController(ILogger<SpeedTestController> logger)
+    public SpeedTestController(ILogger<SpeedTestController> logger, ISpeedTestEvents speedTestEvents)
     {
         _logger = logger;
+        _speedTestEvents = speedTestEvents;
     }
     // GET speedtest/ping
     [Route("ping")]
@@ -23,9 +27,11 @@ public class SpeedTestController : ControllerBase
 
     // POST speedtest/
     [HttpPost]
-    public string UploadSpeedTest([FromBody] TestResult speedTest)
+    public async Task<string> UploadSpeedTest([FromBody] TestResult speedTest)
     {
-       var response = $"Got a TestResult from { speedTest.User } with download { speedTest.Data.Speeds.Download } Mbps.";
+        await _speedTestEvents.PublishSpeedTest(speedTest);
+
+        var response = $"Got a TestResult from { speedTest.User } with download { speedTest.Data.Speeds.Download } Mbps.";
         _logger.LogInformation(response);
 
         return response;
